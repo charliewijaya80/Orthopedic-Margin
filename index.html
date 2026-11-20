@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orthopedic Margin Count</title>
+    <!-- Konfigurasi Web App untuk iPhone (iOS) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kalkulator Margin">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/2563eb/ffffff?text=KM">
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Font Inter dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Memuat Lucide Icons untuk ikon modern -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Kustomisasi scrollbar agar lebih rapi */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Padding aman untuk area home indicator di iPhone */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        /* Transisi halus untuk splash screen */
+        #splash-screen {
+            transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #splash-screen.splash-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        @keyframes splashPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.04);
+            }
+        }
+        .splash-logo-anim {
+            animation: splashPulse 1.8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col pb-24">
+
+    <!-- Splash Screen Pembuka Aplikasi -->
+    <div id="splash-screen" role="status" aria-label="Memuat Orthopedic Margin Count" class="fixed inset-0 z-50 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 flex flex-col items-center justify-center px-6 text-white select-none">
+        <div class="flex flex-col items-center text-center max-w-xs">
+            <div class="splash-logo-anim bg-white/15 backdrop-blur-md border border-white/25 p-5 rounded-3xl shadow-2xl mb-5">
+                <i data-lucide="calculator" class="w-12 h-12 text-white"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold tracking-tight leading-snug">Orthopedic Margin Count</h2>
+            <p class="text-xs sm:text-sm text-blue-100 mt-1.5 font-medium">Murni Teguh Susanna Wesley</p>
+
+            <!-- Indikator loading halus -->
+            <div class="mt-7 w-36 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div id="splash-progress" class="h-full bg-white rounded-full w-1/3 transition-all duration-700 ease-out"></div>
+            </div>
+            <span class="text-[11px] text-blue-200/90 mt-2.5 tracking-wide">Menyiapkan aplikasi...</span>
+        </div>
+    </div>
+
+    <!-- Header Aplikasi -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-xl shadow-sm">
+                    <i data-lucide="calculator" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Orthopedic Margin Count</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Orthopedic Margin Count Murni Teguh Susanna Wesley</p>
+                </div>
+            </div>
+
+            <!-- Tombol Reset (Hanya tampil di halaman Kalkulator) -->
+            <div id="header-actions" class="flex items-center gap-2">
+                <button onclick="resetForm()" class="text-sm text-slate-600 hover:text-blue-600 flex items-center gap-1.5 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors font-medium">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Reset</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- HALAMAN 1: KALKULATOR MARGIN                                          -->
+    <!-- ===================================================================== -->
+    <main id="page-calculator" class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        
+        <!-- Tab Navigasi Mode Kalkulator -->
+        <div class="bg-slate-200/70 p-1.5 rounded-2xl flex max-w-md mx-auto mb-8 shadow-inner">
+            <button id="tab-all-vendor" onclick="switchMode('all_vendor')" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-blue-600 shadow-sm flex items-center justify-center gap-2">
+                <i data-lucide="building-2" class="w-4 h-4"></i>
+                All Vendor
+            </button>
+            <button id="tab-double-med" onclick="switchMode('double_med')" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2">
+                <i data-lucide="shield-plus" class="w-4 h-4"></i>
+                Double Med
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-6 sm:gap-8 max-w-2xl mx-auto">
+            
+            <!-- Bagian Atas: Rincian & Hasil Akhir -->
+            <div>
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                    <!-- Header Hasil -->
+                    <div id="result-header" class="bg-gradient-to-r from-blue-600 to-blue-700 p-5 sm:p-6 text-white">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-blue-100 text-xs font-medium uppercase tracking-wider mb-1">Harga Final</p>
+                                <h3 id="final-price" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Rp 0</h3>
+                                <span class="inline-block mt-1.5 text-[11px] font-medium bg-white/15 text-blue-50 px-2 py-0.5 rounded-md">Include PPN</span>
+                            </div>
+                            <button onclick="copyResult()" title="Salin Nominal Harga" class="bg-white/15 hover:bg-white/25 text-white p-2 rounded-xl transition-colors backdrop-blur-sm">
+                                <i data-lucide="copy" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <p id="selected-vendor-label" class="text-xs text-blue-100 mt-3 pt-3 border-t border-white/15 flex items-center gap-1.5">
+                            <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                            <span>Vendor: Manual</span>
+                        </p>
+                    </div>
+
+                    <!-- Rincian Langkah Perhitungan -->
+                    <div class="p-5 sm:p-6 space-y-3.5 text-sm">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Rincian Harga</h4>
+                        
+                        <div class="flex justify-between items-center py-1">
+                            <span class="text-slate-600">HNA</span>
+                            <span id="res-hna" class="font-medium text-slate-900">Rp 0</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-1">
+                            <span class="text-slate-600">HNA PPN</span>
+                            <span id="res-hna-ppn" class="font-medium text-slate-900">Rp 0</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-1 text-red-600">
+                            <span id="res-disc-label">Disc (0%)</span>
+                            <span id="res-disc-amount" class="font-medium">- Rp 0</span>
+                        </div>
+
+                        <div class="border-t border-dashed border-slate-200 my-1"></div>
+
+                        <div class="flex justify-between items-center py-1.5 bg-slate-50 px-3 rounded-lg">
+                            <span class="text-slate-700 font-medium">Harga PPN + Margin</span>
+                            <span id="res-jual-margin" class="font-semibold text-slate-900">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Bawah: Form Input & Pilihan Vendor -->
+            <div class="space-y-6">
+                
+                <!-- Kartu Input Utama -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-5">
+                        <h2 id="form-title" class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
+                            Perhitungan All Vendor
+                        </h2>
+                    </div>
+
+                    <div class="space-y-5">
+                        <!-- Pilihan Vendor / Kategori -->
+                        <div id="section-select-all-vendor">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label for="select-vendor" class="block text-sm font-medium text-slate-700">Pilih Vendor</label>
+                                <button type="button" onclick="openModalVendor()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    Kelola / Tambah Vendor
+                                </button>
+                            </div>
+                            <select id="select-vendor" onchange="handleVendorChange()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-3 transition-colors">
+                                <!-- Opsi akan diisi oleh JavaScript -->
+                            </select>
+                            <p class="text-xs text-slate-500 mt-1.5">Diskon akan Terisi Otomatis</p>
+                        </div>
+
+                        <!-- Pilihan Kategori Khusus Double Med -->
+                        <div id="section-select-double-med" class="hidden">
+                            <label for="select-double-med-cat" class="block text-sm font-medium text-slate-700 mb-1.5">Pilih Kategori Double Med</label>
+                            <select id="select-double-med-cat" onchange="handleDoubleMedCatChange()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 transition-colors">
+                                <option value="custom">Input Manual</option>
+                                <option value="13.5" selected>DOUBLE MED - TRAUMA (Disc 13.50%)</option>
+                                <option value="33.5">DOUBLE MED - SPINE (Disc 33.50%)</option>
+                            </select>
+                        </div>
+
+                        <!-- Input HNA (Harga Netto Apotek) -->
+                        <div>
+                            <label for="input-hna" class="block text-sm font-medium text-slate-700 mb-1.5">HNA</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <span class="text-slate-500 font-semibold sm:text-sm">Rp</span>
+                                </div>
+                                <input type="text" id="input-hna" inputmode="numeric" placeholder="0" oninput="formatAndCalculateHNA(this)" class="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
+                            </div>
+                        </div>
+
+                        <!-- Input Diskon (%) -->
+                        <div>
+                            <label for="input-disc" class="block text-sm font-medium text-slate-700 mb-1.5">Diskon (%)</label>
+                            <div class="relative">
+                                <input type="number" id="input-disc" step="0.01" min="0" max="100" placeholder="0" oninput="calculate()" class="w-full pl-4 pr-10 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                    <span class="text-slate-500 font-semibold sm:text-sm">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- HALAMAN 2: TRACK PASIEN                                               -->
+    <!-- ===================================================================== -->
+    <main id="page-tracker" class="hidden flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+        
+        <!-- Form Tambah / Edit Data Pasien -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
+                <h2 id="tracker-form-title" class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
+                    Input Data Track Pasien
+                </h2>
+                <button type="button" onclick="openModalDoctor()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                    Tambah / Kelola Dokter
+                </button>
+            </div>
+
+            <form id="patient-form" onsubmit="savePatientRecord(event)" class="space-y-4">
+                <input type="hidden" id="edit-patient-id" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Nama Pasien -->
+                    <div>
+                        <label for="pt-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nama Pasien *</label>
+                        <input type="text" id="pt-name" required placeholder="Contoh: ANDERES BANGUN" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+
+                    <!-- Nama Dokter (Pilihan Dropdown yang dapat ditambah/dikelola) -->
+                    <div>
+                        <label for="pt-doctor" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nama Dokter *</label>
+                        <select id="pt-doctor" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            <!-- Diisi otomatis dari daftar dokter -->
+                        </select>
+                    </div>
+
+                    <!-- Vendor (Tersinkronisasi dengan daftar vendor kalkulator) -->
+                    <div>
+                        <label for="pt-vendor" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Vendor *</label>
+                        <select id="pt-vendor" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            <!-- Diisi otomatis dari daftar vendor -->
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Tindakan -->
+                    <div>
+                        <label for="pt-date" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Tanggal Tindakan *</label>
+                        <input type="date" id="pt-date" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+
+                    <!-- Status Alat -->
+                    <div>
+                        <label for="pt-status" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Status Alat *</label>
+                        <select id="pt-status" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            <option value="DONE">DONE</option>
+                            <option value="SCHEDULED">SCHEDULED / TERJADWAL</option>
+                            <option value="RESCHEDULE">RESCHEDULE</option>
+                            <option value="CANCEL">CANCEL</option>
+                        </select>
+                    </div>
+
+                    <!-- Alasan / Keterangan -->
+                    <div>
+                        <label for="pt-reason" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Alasan / Keterangan</label>
+                        <input type="text" id="pt-reason" placeholder="Contoh: NON LOCKING (Opsional)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+                    <button type="button" id="btn-cancel-edit" onclick="resetPatientForm()" class="hidden px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+                        Batal Edit
+                    </button>
+                    <button type="submit" id="btn-submit-patient" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Simpan Data Pasien</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabel / Daftar Track Pasien -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Daftar Tracking Tindakan & Alat</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Data tersimpan otomatis di memori perangkat Anda</p>
+                </div>
+                
+                <!-- Filter, Pencarian & Export Excel -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative flex-grow sm:flex-grow-0">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="search-patient" oninput="renderPatientTable()" placeholder="Cari pasien / dokter..." class="w-full sm:w-52 pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <select id="filter-status" onchange="renderPatientTable()" class="px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                        <option value="ALL">Semua Status</option>
+                        <option value="DONE">DONE</option>
+                        <option value="SCHEDULED">SCHEDULED</option>
+                        <option value="RESCHEDULE">RESCHEDULE</option>
+                        <option value="CANCEL">CANCEL</option>
+                    </select>
+                    <button type="button" onclick="exportPatientsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <span>Export Excel</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Responsif -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                            <th class="py-3.5 px-4 text-center w-12">NO</th>
+                            <th class="py-3.5 px-4">NAMA PASIEN</th>
+                            <th class="py-3.5 px-4">NAMA DOKTER</th>
+                            <th class="py-3.5 px-4">VENDOR</th>
+                            <th class="py-3.5 px-4">TANGGAL TINDAKAN</th>
+                            <th class="py-3.5 px-4">STATUS ALAT</th>
+                            <th class="py-3.5 px-4">ALASAN</th>
+                            <th class="py-3.5 px-4 text-center">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-table-body" class="divide-y divide-slate-200 text-sm">
+                        <!-- Baris data dirender oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Kelola / Tambah Vendor (Kalkulator Margin) -->
+    <div id="modal-vendor" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Header Modal -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="list-plus" class="w-5 h-5 text-blue-600"></i>
+                    Daftar Vendor
+                </h3>
+                <button onclick="closeModalVendor()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Form Tambah Vendor Baru -->
+            <div class="p-6 border-b border-slate-200 bg-white">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Tambah Vendor Baru</h4>
+                <form onsubmit="addNewVendor(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Nama Vendor *</label>
+                            <input type="text" id="new-vendor-name" required placeholder="Contoh: BGM / PT. MAJU JAYA" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Diskon (%) *</label>
+                            <input type="number" id="new-vendor-disc" required step="0.01" min="0" max="100" placeholder="0" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div class="flex items-end gap-3">
+                        <div class="flex-grow">
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Manufaktur / Keterangan</label>
+                            <input type="text" id="new-vendor-mfg" placeholder="Contoh: OSFIX / ZIMMER" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm shrink-0">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Tambah
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Daftar Vendor yang Tersimpan -->
+            <div class="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Vendor Tersedia</h4>
+                <div id="vendor-list-container" class="space-y-2">
+                    <!-- Daftar vendor dirender lewat JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Kelola / Tambah Dokter (Khusus Track Pasien) -->
+    <div id="modal-doctor" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Header Modal -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="stethoscope" class="w-5 h-5 text-blue-600"></i>
+                    Daftar Dokter
+                </h3>
+                <button onclick="closeModalDoctor()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Form Tambah Dokter Baru -->
+            <div class="p-6 border-b border-slate-200 bg-white">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Tambah Dokter Baru</h4>
+                <form onsubmit="addNewDoctor(event)" class="flex items-end gap-2.5">
+                    <div class="flex-grow">
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Nama Dokter *</label>
+                        <input type="text" id="new-doctor-name" required placeholder="Contoh: Dr. John, Sp.OT" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm shrink-0">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Tambah
+                    </button>
+                </form>
+            </div>
+
+            <!-- Daftar Dokter yang Tersimpan -->
+            <div class="p-6 overflow-y-auto flex-grow bg-slate-50/50">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Dokter Tersedia</h4>
+                <div id="doctor-list-container" class="space-y-2">
+                    <!-- Daftar dokter dirender lewat JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifikasi Toast (Pengganti alert()) -->
+    <div id="toast" class="fixed bottom-24 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2.5 transform translate-y-24 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toast-message">Pesan notifikasi</span>
+    </div>
+
+    <!-- Bottom Tab Bar Navigation -->
+    <nav class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 shadow-[0_-4px_12px_rgba(15,23,42,0.05)] pb-safe">
+        <div class="max-w-md mx-auto grid grid-cols-2 h-16">
+            <button id="nav-calculator" onclick="switchPage('calculator')" class="flex flex-col items-center justify-center gap-1 text-blue-600 font-semibold transition-colors relative">
+                <span id="nav-indicator-calc" class="absolute top-0 w-12 h-1 bg-blue-600 rounded-b-full"></span>
+                <i data-lucide="calculator" class="w-5 h-5"></i>
+                <span class="text-[11px] tracking-tight">Kalkulator Margin</span>
+            </button>
+            <button id="nav-tracker" onclick="switchPage('tracker')" class="flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-800 font-medium transition-colors relative">
+                <span id="nav-indicator-track" class="hidden absolute top-0 w-12 h-1 bg-blue-600 rounded-b-full"></span>
+                <div class="relative">
+                    <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                    <span id="badge-patient-count" class="absolute -top-1.5 -right-2.5 bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center shadow-sm">0</span>
+                </div>
+                <span class="text-[11px] tracking-tight">Track Pasien</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+
+        // Data awal vendor (mengambil dari memori HP jika sudah pernah ditambah/diubah)
+        const defaultVendors = [
+            { id: 'v1', name: 'SPI', disc: 0, mfg: '' },
+            { id: 'v2', name: 'SPI', disc: 10, mfg: 'OSFIX' },
+            { id: 'v3', name: 'BAS', disc: 3, mfg: 'HENGJIE & FUKANG' },
+            { id: 'v4', name: 'TRAFAS (MITRA FAJAR)', disc: 0, mfg: '-' },
+            { id: 'v5', name: 'AKARIM', disc: 20, mfg: 'ORTHOSON' },
+            { id: 'v6', name: 'AKARIM', disc: 10, mfg: 'ZIMMER' },
+            { id: 'v7', name: 'BGM', disc: 0, mfg: '' },
+            { id: 'v8', name: 'DOUBLE MED', disc: 13.5, mfg: 'TRAUMA' },
+            { id: 'v9', name: 'DOUBLE MED', disc: 33.5, mfg: 'SPINE' }
+        ];
+        let vendors = JSON.parse(localStorage.getItem('saved_margin_vendors')) || defaultVendors;
+
+        function saveVendorsToStorage() {
+            localStorage.setItem('saved_margin_vendors', JSON.stringify(vendors));
+        }
+
+        // Data awal Dokter (tersimpan otomatis di localStorage)
+        const defaultDoctors = [
+            { id: 'd1', name: 'Dr. John, Sp.OT' }
+        ];
+        let doctors = JSON.parse(localStorage.getItem('saved_track_doctors')) || defaultDoctors;
+
+        function saveDoctorsToStorage() {
+            localStorage.setItem('saved_track_doctors', JSON.stringify(doctors));
+        }
+
+        // Data awal Track Pasien (contoh sesuai gambar, tersimpan di localStorage)
+        const defaultPatients = [
+            { id: 'p1', name: 'ANDERES BANGUN', doctor: 'Dr. John, Sp.OT', vendor: 'BAS', date: '2026-11-19', status: 'CANCEL', reason: 'NON LOCKING' },
+            { id: 'p2', name: 'BERSIH SINURAYA', doctor: 'Dr. John, Sp.OT', vendor: 'BGM', date: '2026-11-27', status: 'RESCHEDULE', reason: '' },
+            { id: 'p3', name: 'BENEDIKTA MAHULAE', doctor: 'Dr. John, Sp.OT', vendor: 'SPI', date: '2026-11-19', status: 'DONE', reason: '' }
+        ];
+        let patients = JSON.parse(localStorage.getItem('saved_patient_tracks')) || defaultPatients;
+
+        function savePatientsToStorage() {
+            localStorage.setItem('saved_patient_tracks', JSON.stringify(patients));
+            updatePatientBadge();
+        }
+
+        function updatePatientBadge() {
+            const badge = document.getElementById('badge-patient-count');
+            if (badge) badge.textContent = patients.length;
+        }
+
+        // =====================================================================
+        // NAVIGASI HALAMAN (KALKULATOR VS TRACK PASIEN)
+        // =====================================================================
+        function switchPage(page) {
+            const pageCalc = document.getElementById('page-calculator');
+            const pageTrack = document.getElementById('page-tracker');
+            const navCalc = document.getElementById('nav-calculator');
+            const navTrack = document.getElementById('nav-tracker');
+            const indCalc = document.getElementById('nav-indicator-calc');
+            const indTrack = document.getElementById('nav-indicator-track');
+            const headerActions = document.getElementById('header-actions');
+
+            if (page === 'calculator') {
+                pageCalc.classList.remove('hidden');
+                pageTrack.classList.add('hidden');
+                headerActions.classList.remove('hidden');
+
+                navCalc.className = 'flex flex-col items-center justify-center gap-1 text-blue-600 font-semibold transition-colors relative';
+                navTrack.className = 'flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-800 font-medium transition-colors relative';
+                indCalc.classList.remove('hidden');
+                indTrack.classList.add('hidden');
+            } else {
+                pageCalc.classList.add('hidden');
+                pageTrack.classList.remove('hidden');
+                headerActions.classList.add('hidden');
+
+                navTrack.className = 'flex flex-col items-center justify-center gap-1 text-blue-600 font-semibold transition-colors relative';
+                navCalc.className = 'flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-800 font-medium transition-colors relative';
+                indTrack.classList.remove('hidden');
+                indCalc.classList.add('hidden');
+                
+                renderDoctorDropdown();
+                renderPatientVendorDropdown();
+                renderPatientTable();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+        // =====================================================================
+        // LOGIKA KALKULATOR MARGIN
+        // =====================================================================
+        let currentMode = 'all_vendor'; // 'all_vendor' atau 'double_med'
+        let rawHna = 0;
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(angka);
+        }
+
+        function formatAndCalculateHNA(input) {
+            let value = input.value.replace(/\D/g, '');
+            rawHna = value ? parseFloat(value) : 0;
+            
+            if (value) {
+                input.value = new Intl.NumberFormat('id-ID').format(rawHna);
+            } else {
+                input.value = '';
+            }
+            
+            calculate();
+        }
+
+        // Render dropdown pilihan vendor untuk mode All Vendor
+        function renderVendorDropdown() {
+            const select = document.getElementById('select-vendor');
+            select.innerHTML = '<option value="manual">-- Input Manual --</option>';
+            
+            vendors.forEach(v => {
+                const mfgText = v.mfg && v.mfg !== '-' ? ` - ${v.mfg}` : '';
+                const option = document.createElement('option');
+                option.value = v.id;
+                option.textContent = `${v.name}${mfgText} (Disc ${v.disc.toFixed(2)}%)`;
+                select.appendChild(option);
+            });
+        }
+
+        // Render dropdown pilihan vendor pada halaman Track Pasien (disamakan dengan vendor kalkulator)
+        function renderPatientVendorDropdown() {
+            const select = document.getElementById('pt-vendor');
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '';
+
+            const seenLabels = new Set();
+            vendors.forEach(v => {
+                const mfgText = v.mfg && v.mfg !== '-' ? ` (${v.mfg})` : '';
+                const labelText = `${v.name}${mfgText}`;
+                if (!seenLabels.has(labelText)) {
+                    seenLabels.add(labelText);
+                    const option = document.createElement('option');
+                    option.value = labelText;
+                    option.textContent = labelText;
+                    select.appendChild(option);
+                }
+            });
+
+            if (currentVal && seenLabels.has(currentVal)) {
+                select.value = currentVal;
+            }
+        }
+
+        // Render dropdown pilihan dokter pada halaman Track Pasien
+        function renderDoctorDropdown() {
+            const select = document.getElementById('pt-doctor');
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '';
+
+            if (doctors.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = '-- Tambah Dokter Terlebih Dahulu --';
+                select.appendChild(opt);
+                return;
+            }
+
+            doctors.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d.name;
+                option.textContent = d.name;
+                select.appendChild(option);
+            });
+
+            if (currentVal && doctors.some(d => d.name === currentVal)) {
+                select.value = currentVal;
+            }
+        }
+
+        // Render daftar dokter di dalam modal kelola dokter
+        function renderDoctorModalList() {
+            const container = document.getElementById('doctor-list-container');
+            container.innerHTML = '';
+
+            if (doctors.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Belum ada nama dokter tersimpan.</p>';
+                return;
+            }
+
+            doctors.forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm';
+                item.innerHTML = `
+                    <span class="font-bold text-sm text-slate-800">${d.name}</span>
+                    <button onclick="deleteDoctor('${d.id}')" title="Hapus Dokter" class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        function addNewDoctor(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-doctor-name');
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            if (doctors.some(d => d.name.toLowerCase() === name.toLowerCase())) {
+                showToast('Nama dokter sudah ada di daftar');
+                return;
+            }
+
+            doctors.push({ id: 'd_' + Date.now(), name });
+            saveDoctorsToStorage();
+            nameInput.value = '';
+
+            renderDoctorDropdown();
+            renderDoctorModalList();
+
+            const select = document.getElementById('pt-doctor');
+            if (select) select.value = name;
+
+            showToast(`Dokter "${name}" berhasil ditambahkan!`);
+        }
+
+        function deleteDoctor(id) {
+            doctors = doctors.filter(d => d.id !== id);
+            saveDoctorsToStorage();
+            renderDoctorDropdown();
+            renderDoctorModalList();
+            showToast('Nama dokter dihapus dari daftar');
+        }
+
+        // Render daftar vendor di dalam modal kelola vendor
+        function renderVendorModalList() {
+            const container = document.getElementById('vendor-list-container');
+            container.innerHTML = '';
+
+            if (vendors.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Belum ada vendor tersimpan.</p>';
+                return;
+            }
+
+            vendors.forEach(v => {
+                const mfgBadge = v.mfg && v.mfg !== '-' 
+                    ? `<span class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-medium">${v.mfg}</span>` 
+                    : '';
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm';
+                item.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-slate-800">${v.name}</span>
+                            ${mfgBadge}
+                        </div>
+                        <p class="text-xs text-blue-600 font-semibold mt-0.5">Diskon: ${v.disc.toFixed(2)}%</p>
+                    </div>
+                    <button onclick="deleteVendor('${v.id}')" title="Hapus Vendor" class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        // Menambah vendor baru ke daftar acuan (otomatis terupdate di Kalkulator & Track Pasien)
+        function addNewVendor(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-vendor-name');
+            const discInput = document.getElementById('new-vendor-disc');
+            const mfgInput = document.getElementById('new-vendor-mfg');
+
+            const name = nameInput.value.trim().toUpperCase();
+            const disc = parseFloat(discInput.value) || 0;
+            const mfg = mfgInput.value.trim().toUpperCase();
+
+            if (!name) return;
+
+            const newId = 'v_' + Date.now();
+            vendors.push({ id: newId, name, disc, mfg });
+            saveVendorsToStorage();
+
+            nameInput.value = '';
+            discInput.value = '';
+            mfgInput.value = '';
+
+            renderVendorDropdown();
+            renderPatientVendorDropdown();
+            renderVendorModalList();
+
+            const select = document.getElementById('select-vendor');
+            select.value = newId;
+            handleVendorChange();
+
+            const ptSelect = document.getElementById('pt-vendor');
+            if (ptSelect) {
+                const mfgText = mfg && mfg !== '-' ? ` (${mfg})` : '';
+                ptSelect.value = `${name}${mfgText}`;
+            }
+
+            showToast(`Vendor "${name}" berhasil ditambahkan!`);
+        }
+
+        // Menghapus vendor dari daftar
+        function deleteVendor(id) {
+            vendors = vendors.filter(v => v.id !== id);
+            saveVendorsToStorage();
+            renderVendorDropdown();
+            renderPatientVendorDropdown();
+            renderVendorModalList();
+            
+            const select = document.getElementById('select-vendor');
+            if (!vendors.some(v => v.id === select.value)) {
+                select.value = 'manual';
+                handleVendorChange();
+            }
+            showToast('Vendor dihapus dari daftar');
+        }
+
+        function handleVendorChange() {
+            const select = document.getElementById('select-vendor');
+            const discInput = document.getElementById('input-disc');
+            const label = document.getElementById('selected-vendor-label');
+
+            if (select.value === 'manual') {
+                label.innerHTML = `<i data-lucide="tag" class="w-3.5 h-3.5"></i><span>Vendor: Input Manual</span>`;
+            } else {
+                const selected = vendors.find(v => v.id === select.value);
+                if (selected) {
+                    discInput.value = selected.disc;
+                    const mfgInfo = selected.mfg && selected.mfg !== '-' ? ` (${selected.mfg})` : '';
+                    label.innerHTML = `<i data-lucide="tag" class="w-3.5 h-3.5"></i><span>Vendor: ${selected.name}${mfgInfo}</span>`;
+                }
+            }
+            lucide.createIcons();
+            calculate();
+        }
+
+        function handleDoubleMedCatChange() {
+            const select = document.getElementById('select-double-med-cat');
+            const discInput = document.getElementById('input-disc');
+            const label = document.getElementById('selected-vendor-label');
+
+            if (select.value === 'custom') {
+                label.innerHTML = `<i data-lucide="shield-plus" class="w-3.5 h-3.5"></i><span>Double Med (Diskon Manual)</span>`;
+            } else {
+                discInput.value = parseFloat(select.value);
+                const catName = select.value === '13.5' ? 'TRAUMA' : 'SPINE';
+                label.innerHTML = `<i data-lucide="shield-plus" class="w-3.5 h-3.5"></i><span>Double Med - ${catName}</span>`;
+            }
+            lucide.createIcons();
+            calculate();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+
+            const tabAll = document.getElementById('tab-all-vendor');
+            const tabDm = document.getElementById('tab-double-med');
+            const secAll = document.getElementById('section-select-all-vendor');
+            const secDm = document.getElementById('section-select-double-med');
+            const formTitle = document.getElementById('form-title');
+            const resultHeader = document.getElementById('result-header');
+
+            if (mode === 'all_vendor') {
+                tabAll.className = 'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-blue-600 shadow-sm flex items-center justify-center gap-2';
+                tabDm.className = 'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2';
+                
+                secAll.classList.remove('hidden');
+                secDm.classList.add('hidden');
+
+                formTitle.innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> Perhitungan All Vendor`;
+                resultHeader.className = 'bg-gradient-to-r from-blue-600 to-blue-700 p-5 sm:p-6 text-white';
+
+                handleVendorChange();
+            } else {
+                tabDm.className = 'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-indigo-600 shadow-sm flex items-center justify-center gap-2';
+                tabAll.className = 'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2';
+
+                secAll.classList.add('hidden');
+                secDm.classList.remove('hidden');
+
+                formTitle.innerHTML = `<span class="w-2 h-6 bg-indigo-600 rounded-full"></span> Perhitungan Khusus Double Med`;
+                resultHeader.className = 'bg-gradient-to-r from-indigo-600 to-indigo-700 p-5 sm:p-6 text-white';
+
+                handleDoubleMedCatChange();
+            }
+        }
+
+        function calculate() {
+            const discPercent = parseFloat(document.getElementById('input-disc').value) || 0;
+            
+            const hnaPpn = rawHna * 1.11;
+            const discAmount = rawHna * (discPercent / 100);
+            const afterDisc = rawHna - discAmount;
+            const ppnAmount = afterDisc * 0.11;
+            const afterPpn = afterDisc + ppnAmount;
+
+            let rawFinalPrice = 0;
+
+            if (currentMode === 'all_vendor') {
+                rawFinalPrice = afterPpn * 1.20;
+            } else {
+                const afterGamaliel = afterPpn * 1.05;
+                rawFinalPrice = afterGamaliel * 1.20;
+            }
+
+            // Round up ke kelipatan ratusan terdekat
+            const roundedFinalPrice = Math.ceil(rawFinalPrice / 100) * 100;
+
+            document.getElementById('res-hna').textContent = formatRupiah(rawHna);
+            document.getElementById('res-hna-ppn').textContent = formatRupiah(hnaPpn);
+            document.getElementById('res-disc-label').textContent = `Disc (${discPercent}%)`;
+            document.getElementById('res-disc-amount').textContent = `- ${formatRupiah(discAmount)}`;
+            document.getElementById('res-jual-margin').textContent = formatRupiah(rawFinalPrice);
+            document.getElementById('final-price').textContent = formatRupiah(roundedFinalPrice);
+        }
+
+        function resetForm() {
+            rawHna = 0;
+            document.getElementById('input-hna').value = '';
+            document.getElementById('input-disc').value = '';
+            
+            if (currentMode === 'all_vendor') {
+                document.getElementById('select-vendor').value = 'manual';
+                handleVendorChange();
+            } else {
+                document.getElementById('select-double-med-cat').value = '13.5';
+                handleDoubleMedCatChange();
+            }
+            showToast('Perhitungan telah direset');
+        }
+
+        function copyResult() {
+            const finalPriceText = document.getElementById('final-price').textContent;
+            const numericOnly = finalPriceText.replace(/[^\d]/g, '');
+            const formattedWithComma = numericOnly
+                ? Number(numericOnly).toLocaleString('en-US')
+                : '0';
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = formattedWithComma;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast(`Nominal ${formattedWithComma} berhasil disalin!`);
+        }
+
+        // =====================================================================
+        // LOGIKA TRACK PASIEN & EXPORT EXCEL
+        // =====================================================================
+        function formatDateDisplay(isoDate) {
+            if (!isoDate) return '-';
+            const parts = isoDate.split('-');
+            if (parts.length !== 3) return isoDate;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function getStatusBadgeHTML(status) {
+            const upper = (status || '').toUpperCase();
+            if (upper === 'DONE') {
+                return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">DONE</span>`;
+            }
+            if (upper === 'CANCEL') {
+                return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">CANCEL</span>`;
+            }
+            if (upper === 'RESCHEDULE') {
+                return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">RESCHEDULE</span>`;
+            }
+            return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">${upper}</span>`;
+        }
+
+        function getFilteredPatients() {
+            const query = (document.getElementById('search-patient')?.value || '').trim().toLowerCase();
+            const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
+
+            return patients.filter(p => {
+                const matchStatus = statusFilter === 'ALL' || p.status === statusFilter;
+                const matchQuery = !query || 
+                    p.name.toLowerCase().includes(query) || 
+                    p.doctor.toLowerCase().includes(query) || 
+                    p.vendor.toLowerCase().includes(query) ||
+                    (p.reason && p.reason.toLowerCase().includes(query));
+                return matchStatus && matchQuery;
+            });
+        }
+
+        function renderPatientTable() {
+            const tbody = document.getElementById('patient-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtered = getFilteredPatients();
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-10 px-4 text-center text-slate-400 text-sm">
+                            Belum ada data pasien yang sesuai. Silakan tambahkan data baru di atas.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach((p, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 text-center font-semibold text-slate-500">${idx + 1}</td>
+                    <td class="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">${p.name}</td>
+                    <td class="py-3.5 px-4 text-slate-700 whitespace-nowrap">${p.doctor}</td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                        <span class="bg-slate-100 text-slate-800 border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-semibold">${p.vendor}</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-slate-700 font-medium whitespace-nowrap">${formatDateDisplay(p.date)}</td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">${getStatusBadgeHTML(p.status)}</td>
+                    <td class="py-3.5 px-4 text-slate-600 text-xs font-medium">${p.reason || '-'}</td>
+                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                        <div class="inline-flex items-center gap-1">
+                            <button type="button" onclick="editPatientRecord('${p.id}')" title="Edit Data" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button type="button" onclick="deletePatientRecord('${p.id}')" title="Hapus Data" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function savePatientRecord(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-patient-id').value;
+            const name = document.getElementById('pt-name').value.trim().toUpperCase();
+            const doctor = document.getElementById('pt-doctor').value.trim();
+            const vendor = document.getElementById('pt-vendor').value;
+            const date = document.getElementById('pt-date').value;
+            const status = document.getElementById('pt-status').value;
+            const reason = document.getElementById('pt-reason').value.trim().toUpperCase();
+
+            if (!name || !doctor || !vendor || !date) {
+                showToast('Mohon lengkapi semua kolom wajib (*)');
+                return;
+            }
+
+            if (editId) {
+                const idx = patients.findIndex(p => p.id === editId);
+                if (idx !== -1) {
+                    patients[idx] = { id: editId, name, doctor, vendor, date, status, reason };
+                    showToast(`Data pasien "${name}" diperbarui!`);
+                }
+            } else {
+                patients.push({
+                    id: 'p_' + Date.now(),
+                    name,
+                    doctor,
+                    vendor,
+                    date,
+                    status,
+                    reason
+                });
+                showToast(`Data pasien "${name}" disimpan!`);
+            }
+
+            savePatientsToStorage();
+            resetPatientForm();
+            renderPatientTable();
+        }
+
+        function editPatientRecord(id) {
+            const p = patients.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('edit-patient-id').value = p.id;
+            document.getElementById('pt-name').value = p.name;
+
+            // Pastikan dokter & vendor tetap tersedia di dropdown saat edit
+            const docSelect = document.getElementById('pt-doctor');
+            if (!Array.from(docSelect.options).some(opt => opt.value === p.doctor)) {
+                const opt = document.createElement('option');
+                opt.value = p.doctor;
+                opt.textContent = p.doctor;
+                docSelect.appendChild(opt);
+            }
+            docSelect.value = p.doctor;
+
+            const vendorSelect = document.getElementById('pt-vendor');
+            if (!Array.from(vendorSelect.options).some(opt => opt.value === p.vendor)) {
+                const opt = document.createElement('option');
+                opt.value = p.vendor;
+                opt.textContent = p.vendor;
+                vendorSelect.appendChild(opt);
+            }
+            vendorSelect.value = p.vendor;
+
+            document.getElementById('pt-date').value = p.date;
+            document.getElementById('pt-status').value = p.status;
+            document.getElementById('pt-reason').value = p.reason || '';
+
+            document.getElementById('tracker-form-title').innerHTML = `<span class="w-2 h-6 bg-amber-500 rounded-full"></span> Edit Data Track Pasien`;
+            document.getElementById('btn-submit-patient').innerHTML = `<i data-lucide="save" class="w-4 h-4"></i><span>Simpan Perubahan</span>`;
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+        function deletePatientRecord(id) {
+            patients = patients.filter(p => p.id !== id);
+            savePatientsToStorage();
+            renderPatientTable();
+            showToast('Data pasien dihapus');
+        }
+
+        function resetPatientForm() {
+            document.getElementById('edit-patient-id').value = '';
+            document.getElementById('pt-name').value = '';
+            document.getElementById('pt-reason').value = '';
+            document.getElementById('pt-status').value = 'DONE';
+            document.getElementById('pt-date').valueAsDate = new Date();
+
+            document.getElementById('tracker-form-title').innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full"></span> Input Data Track Pasien`;
+            document.getElementById('btn-submit-patient').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i><span>Simpan Data Pasien</span>`;
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            lucide.createIcons();
+        }
+
+        function exportPatientsToExcel() {
+            const dataToExport = getFilteredPatients();
+            if (dataToExport.length === 0) {
+                showToast('Tidak ada data pasien untuk di-export');
+                return;
+            }
+
+            let tableRows = '';
+            dataToExport.forEach((p, idx) => {
+                tableRows += `
+                    <tr>
+                        <td style="border:1px solid #000000; text-align:center; padding:6px 10px;">${idx + 1}</td>
+                        <td style="border:1px solid #000000; text-align:center; padding:6px 12px;">${p.name}</td>
+                        <td style="border:1px solid #000000; text-align:center; padding:6px 12px;">${p.doctor}</td>
+                        <td style="border:1px solid #000000; text-align:center; padding:6px 12px;">${p.vendor}</td>
+                        <td style="border:1px solid #000000; text-align:center; padding:6px 12px;">${formatDateDisplay(p.date)}</td>
+                        <td style="border:1px solid #000000; text-align:left; padding:6px 12px;">${p.status}</td>
+                        <td style="border:1px solid #000000; text-align:left; padding:6px 12px;">${p.reason || ''}</td>
+                    </tr>
+                `;
+            });
+
+            const excelHtml = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Track Pasien</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+                    <style>
+                        table { border-collapse: collapse; font-family: Calibri, Arial, sans-serif; font-size: 11pt; }
+                        th { border: 1px solid #000000; font-weight: bold; text-align: center; padding: 6px 12px; background-color: #ffffff; }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NO</th>
+                                <th>NAMA PASIEN</th>
+                                <th>NAMA DOKTER</th>
+                                <th>VENDOR</th>
+                                <th>TANGGAL TINDAKAN</th>
+                                <th>STATUS ALAT</th>
+                                <th>ALASAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const todayStr = new Date().toISOString().slice(0, 10);
+
+            link.href = url;
+            link.download = `Track_Pasien_Orthopedic_${todayStr}.xls`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('File Excel berhasil diunduh!');
+        }
+
+        // =====================================================================
+        // KONTROL MODAL & TOAST
+        // =====================================================================
+        function openModalVendor() {
+            renderVendorModalList();
+            document.getElementById('modal-vendor').classList.remove('hidden');
+        }
+
+        function closeModalVendor() {
+            document.getElementById('modal-vendor').classList.add('hidden');
+        }
+
+        function openModalDoctor() {
+            renderDoctorModalList();
+            document.getElementById('modal-doctor').classList.remove('hidden');
+        }
+
+        function closeModalDoctor() {
+            document.getElementById('modal-doctor').classList.add('hidden');
+        }
+
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // Inisialisasi saat halaman dimuat
+        window.onload = function() {
+            renderVendorDropdown();
+            renderDoctorDropdown();
+            renderPatientVendorDropdown();
+            updatePatientBadge();
+            
+            const ptDate = document.getElementById('pt-date');
+            if (ptDate) ptDate.valueAsDate = new Date();
+            
+            switchMode('all_vendor');
+            renderPatientTable();
+
+            // Menjalankan animasi & menyembunyikan splash screen setelah halaman siap
+            const splash = document.getElementById('splash-screen');
+            const progress = document.getElementById('splash-progress');
+            if (splash && progress) {
+                requestAnimationFrame(() => {
+                    progress.classList.remove('w-1/3');
+                    progress.classList.add('w-full');
+                });
+                setTimeout(() => {
+                    splash.classList.add('splash-hidden');
+                }, 900);
+            }
+        };
+    </script>
+</body>
+</html>
