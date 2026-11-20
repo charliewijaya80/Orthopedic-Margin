@@ -264,7 +264,7 @@
                     <!-- Nama Pasien -->
                     <div>
                         <label for="pt-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nama Pasien *</label>
-                        <input type="text" id="pt-name" required placeholder="Contoh: ANDERES BANGUN" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                        <input type="text" id="pt-name" required placeholder="" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                     </div>
 
                     <!-- Nama Dokter (Pilihan Dropdown yang dapat ditambah/dikelola) -->
@@ -294,7 +294,7 @@
                         <label for="pt-status" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Status Alat *</label>
                         <select id="pt-status" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                             <option value="DONE">DONE</option>
-                            <option value="SCHEDULED">SCHEDULED / TERJADWAL</option>
+                            <option value="SCHEDULED">SCHEDULED</option>
                             <option value="RESCHEDULE">RESCHEDULE</option>
                             <option value="CANCEL">CANCEL</option>
                         </select>
@@ -994,7 +994,6 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" class="py-10 px-4 text-center text-slate-400 text-sm">
-                            Belum ada data pasien yang sesuai. Silakan tambahkan data baru di atas.
                         </td>
                     </tr>
                 `;
